@@ -7,55 +7,108 @@
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
-  <!-- MindAR for A-Frame (CORRECT FILE) -->
+  <!-- MindAR (A-Frame version) -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <!-- UI Styles -->
+  <style>
+    #scanHint {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      z-index: 9999;
+    }
+
+    #soundHint {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 9999;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.05); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+  </style>
 </head>
 
 <body style="margin:0; overflow:hidden;">
 
-<a-scene
-  mindar-image="imageTargetSrc: targets.mind;"
-  vr-mode-ui="enabled: false"
-  device-orientation-permission-ui="enabled: false">
+  <!-- UI Hints -->
+  <div id="scanHint">📸 Point camera at the photo</div>
+  <div id="soundHint">🔊 Tap to enable sound</div>
 
-  <a-assets>
-    <video
-      id="vid"
-      src="video.mp4"
-      loop
-      muted
-      autoplay
-      playsinline>
-    </video>
-  </a-assets>
+  <!-- AR Scene -->
+  <a-scene
+    mindar-image="imageTargetSrc: targets.mind;"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
 
-  <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+    <a-assets>
+      <video
+        id="vid"
+        src="video.mp4"
+        loop
+        muted
+        autoplay
+        playsinline>
+      </video>
+    </a-assets>
 
-  <a-entity mindar-image-target="targetIndex: 0">
-    <a-video
-      src="#vid"
-      width="1.6"
-      height="0.9"
-      material="shader: flat; src: #vid"
-      position="0 0 0">
-    </a-video>
-  </a-entity>
+    <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
-</a-scene>
+    <!-- AR Content -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <!-- 4:3 Aspect Ratio -->
+      <a-plane
+        width="1.6"
+        height="1.2"
+        material="shader: flat; src: #vid"
+        position="0 0 0">
+      </a-plane>
+    </a-entity>
 
-<script>
-  const scene = document.querySelector("a-scene");
-  const video = document.querySelector("#vid");
+  </a-scene>
 
-  scene.addEventListener("targetFound", () => {
-    video.play();
-  });
+  <!-- Logic -->
+  <script>
+    const scene = document.querySelector("a-scene");
+    const video = document.querySelector("#vid");
+    const scanHint = document.getElementById("scanHint");
+    const soundHint = document.getElementById("soundHint");
 
-  scene.addEventListener("targetLost", () => {
-    video.pause();
-  });
-</script>
+    scene.addEventListener("targetFound", () => {
+      video.play();
+      scanHint.style.display = "none";
+    });
+
+    scene.addEventListener("targetLost", () => {
+      video.pause();
+    });
+
+    document.body.addEventListener("click", () => {
+      if (video.muted) {
+        video.muted = false;
+        video.volume = 1.0;
+        soundHint.style.display = "none";
+      }
+    });
+  </script>
 
 </body>
 </html>
-
